@@ -123,76 +123,8 @@ class SearchComponent extends React.Component {
     console.log('search-component props searchResultData: ', this.props.searchResultData)
     return (
       <View style={{flex: 1}}>
-        {/*<GooglePlacesAutocomplete
-          placeholder="Search"
-          minLength={2} // minimum length of text to search
-          autoFocus={false}
-          returnKeyType={"search"}
-          listViewDisplayed="false"
-          fetchDetails={true}
-          renderDescription={row =>
-            row.description || row.formatted_address || row.name
-          }
-          onPress={(data, details = null) => {
-            const lat = details.geometry.location.lat;
-            const lng = details.geometry.location.lng;
-            const coords = {
-              lat: lat,
-              lng: lng
-            };
-            const locationData = {
-              name: details.name,
-              coords,
-            }
-            console.log('search-component onpress details: ', details);
-            Promise.resolve(selectLocation(locationData))
-            .then(() => {
-              console.log('search-component promise.then: ', this.props)
-              this.props.navigation.navigate('MainScreen')
-            });
-            }}
-          getDefaultValue={() => {
-            return ""; // text input default value
-          }}
-          query={{
-            key: "AIzaSyBBu8K9Mup1qgO1LFE45xrlpLTtGupWzUo",
-            language: "en", // language of the results
-            types: "(cities)" // default: 'geocode'
-          }}
-          styles={{
-            description: {
-              fontWeight: "bold"
-            },
-            predefinedPlacesDescription: {
-              color: "#1faadb"
-            }
-          }}
-          enablePoweredByContainer={true}
-          nearbyPlacesAPI="GoogleReverseGeocoding"
-          GooglePlacesSearchQuery={{
-            rankby: "distance",
-            types: "geocode"
-          }}
-          GooglePlacesDetailsQuery={{
-            // available options for GooglePlacesDetails API : https://developers.google.com/places/web-service/details
-            fields: 'geometry',
-          }}
-          filterReverseGeocodingByTypes={[
-            "locality",
-            "administrative_area_level_3"
-          ]}
-          debounce={200}
-        />*/}
-
         {isloadingGooglePlaces && <ActivityIndicator />}
         {error && getErrorMessage()}
-        {/*searchResultData.length > 0 &&
-           <AlphabetListView
-             data={searchResultData}
-             renderRow={this.renderRow}
-             rowHeight={rowHeight}
-             sectionHeaderHeight={40}
-         />*/}
          {searchResultData && searchResultData.length > 0 && <FlatList
            style={{flex: 1}}
            data={searchResultData}

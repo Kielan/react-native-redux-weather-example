@@ -30,11 +30,16 @@ let WeatherContainer = connect(
 )(WeatherComponent);
 
 export class MainScreen extends React.Component {
+  static navigationOptions = (props) => {
+    return {
+      header: null,
+    }
+  }
   render() {
     console.log('mainscreen this.props: ', this.props, 'this.weatherInfo: ', this.navigationOptions)
     return (
       <View style={styles.container}>
-        {<WeatherContainer navigation={this.props.navigation}/>}
+        <WeatherContainer navigation={this.props.navigation}/>
       </View>
     )
   }

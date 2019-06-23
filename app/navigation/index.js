@@ -11,7 +11,6 @@ export const NavigationStack = createAppContainer(createStackNavigator(
   },
   {
     initialRouteName: 'MainScreen',
-//  headerMode: 'none',
     mode: 'modal',
     navigationOptions: {
       headerVisible: false,

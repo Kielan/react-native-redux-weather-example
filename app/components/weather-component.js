@@ -5,6 +5,7 @@ import {
   Dimensions,
   View,
   Button,
+  ImageBackground,
   Text,
   ActivityIndicator,
   ScrollView,
@@ -66,7 +67,27 @@ const styles = StyleSheet.create({
   },
   tempText: {
     fontSize: 32,
-  }
+  },
+  wrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    backgroundColor: '#fff',
+  },
+  searchInput: {
+    display: 'flex',
+    backgroundColor: '#fff',
+    borderRadius: 3,
+    height: 45,
+    marginTop: 3,
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  locationInput: {
+    marginTop: 10,
+  },
 });
 
 const getErrorMessage = () => (
@@ -75,19 +96,22 @@ const getErrorMessage = () => (
   </Text>
 );
 
-const getWeatherInfo = (weatherInfo) => {
+const getWeatherInfo = (weatherInfo, navigation) => {
   const { summary, temperature } = weatherInfo;
   const info = temperature
     ? `${Math.floor(temperature)} deg, ${summary}`
     : 'No Weather Info Available. Make sure you provided a valid API key in the `config.js` file.';
   const tempInfo = temperature
     ? `${Math.floor(temperature)}` : `ERROR`;
-//      <Text style={styles.weatherInfoText}>{info}</Text>
   return (
     <View style={{flex: 1}}>
+      <ImageBackground source={require('./images/blue_sky.png')} style={{width: '100%', height: height}}>
       <View style={styles.headerContainer}>
-        <Text style={styles.tempText}>{tempInfo}</Text>
-        <Text style={styles.tempText}>{tempInfo}</Text>
+        <Button
+          title='Add Location'
+          onPress={() => navigation.navigate('SearchScreen')}
+          style={styles.button}
+          />
         <Icon
           name={`ios-sunny`}
           size={20}
@@ -96,10 +120,12 @@ const getWeatherInfo = (weatherInfo) => {
             marginRight: 10,
             width: 20,
           }} />
+        <Text style={styles.tempText}>{tempInfo}</Text>
       </View>
       <View style={styles.bodyContainer}>
         <Text style={styles.summaryText}>{summary}</Text>
       </View>
+      </ImageBackground>
     </View>
   );
 };
@@ -132,13 +158,11 @@ class WeatherComponentScreen extends React.Component {
 
     console.log('weather-component props saveLocation: ', savedLocation);
     const hasWeatherData = isLoading ? null : Object.keys(savedLocation).length;
-//        <View><Text>{`${tabLabel}`}</Text></View>
     return (
       <ScrollView key={key} style={{flex: 1}} tabLabel={tabLabel}>
-        <View key={key} style={{flex: 1, flexGrow: 1, height: height, backgroundColor:'#2C2C2D'}} tabLabel={tabLabel}>
-          {<Text>{savedLocation.name}</Text>}
+        <View key={key} style={{flex: 1, flexGrow: 1, height: height}} tabLabel={tabLabel}>
           {isLoading ? <ActivityIndicator /> : null}
-          {hasWeatherData ? getWeatherInfo(savedLocation) : null}
+          {hasWeatherData ? getWeatherInfo(savedLocation, navigation) : null}
         </View>
       </ScrollView>
     )
@@ -163,18 +187,21 @@ export default class WeatherComponent extends React.Component {
       return (
         <View style={styles.container}>
           {error ? getErrorMessage() : null}
-          <Button
-            title='Search Screen'
-            onPress={() => navigation.navigate('SearchScreen')}
-            style={styles.button}
-          />
-          {indexWeatherListData.length > 0
-            && <ScrollableTabView
+          {indexWeatherListData.length === 0 &&
+            <Button
+              title='Add Location'
+              onPress={() => navigation.navigate('SearchScreen')}
+              style={styles.button}
+              />
+          }
+          {indexWeatherListData.length > 0 &&
+            <ScrollableTabView
                   contentContainerStyle={{flexGrow: 1, flex: 1, height: "100%"}}
                   renderTabBar={false}
                 >
               {indexWeatherListData.map(
                 (savedLocation, i) => <WeatherComponentScreen
+                    navigation={navigation}
                     key={`${i}`}
                     savedLocation={savedLocation}
                     tabLabel={`pages_${i}`}

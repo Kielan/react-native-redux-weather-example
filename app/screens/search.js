@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-around',
     flexDirection: 'column',
-//    paddingTop: 80,
   },
 })
 
