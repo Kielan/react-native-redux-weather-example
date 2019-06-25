@@ -1,27 +1,26 @@
 import { ActionType } from '../actions';
-import { fetchGooglePlacesApi, fetchWeatherData } from '../../services/http-requests';
+import { fetchGooglePlacesApi, fetchWeatherData, orderWeatherData } from '../../services/http-requests';
 import { fetchData, fetchDataSuccess } from './fetch-data';
 import { selectLocationSuccess } from './select-location';
 
 export const fetchGooglePlaces = (locationData) => (
   (dispatch) => {
-    console.log('fetch-google-places.js: ', locationData);
+    var locationName;
     return new Promise.resolve(dispatch(fetchGooglePlacesRequest()))
       .then(async () => await fetchGooglePlacesApi(locationData))
       .then((weatherInfo) => {
-        console.log('fetch-google-places-api: ', weatherInfo);
         dispatch(fetchGooglePlacesSuccess(weatherInfo.result.geometry.location))
+        locationName = weatherInfo.result.name;
         return weatherInfo.result.geometry.location;
       })
       .then(async (geometryLocation) => await fetchWeatherData(geometryLocation))
       .then((darkSkyData) => {
-        console.log('darkSkyData resultzzz: ', darkSkyData)
         dispatch(fetchDataSuccess(darkSkyData))
         return darkSkyData;
       })
-      .then((darkSkyData) => {
-        console.log('selectLocationSuccess darkSkyData: ', darkSkyData)
-        dispatch(selectLocationSuccess(darkSkyData))
+      .then(async (darkSkyData) => await orderWeatherData(darkSkyData))
+      .then((weatherDict) => {
+        dispatch(selectLocationSuccess({name: locationName, weatherDict: weatherDict}))
       })
       .catch((err) => {
         dispatch(fetchGooglePlacesError())

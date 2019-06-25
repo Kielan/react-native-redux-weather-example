@@ -10,17 +10,23 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-//import ScrollableTabView from 'react-native-scrollable-tab-view'
+import * as Animatable from 'react-native-animatable';
 import { ScrollableTabView } from '@valdio/react-native-scrollable-tabview'
-
+import HeaderImageScrollView, { TriggeringView } from 'react-native-image-header-scroll-view';
+import { Header } from 'react-navigation';
 
 import { getWeatherSelector } from '../store/reducers/weather-reducer';
 import { fetchData } from '../store/actions/fetch-data';
 
 var { height } = Dimensions.get('window');
+
+
+const MIN_HEIGHT = Header.HEIGHT;
+const MAX_HEIGHT = 150;
 
 const mapStateToProps = (state) => getWeatherSelector(state);
 
@@ -44,6 +50,18 @@ const styles = StyleSheet.create({
   headerContainer: {
     flex: 1,
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around'
+  },
+  dailyContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around'
+  },
+  weeklyContainer: {
+    flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around'
   },
@@ -90,14 +108,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const getErrorMessage = () => (
-  <Text style={styles.errorText}>
-    An Error occured when fetching data
-  </Text>
-);
-
-const getWeatherInfo = (weatherInfo, navigation) => {
-  const { summary, temperature } = weatherInfo;
+const GetWeatherInfo = ({dailyForecast, navigation}) => {
+  const { summary, temperature } = dailyForecast;
   const info = temperature
     ? `${Math.floor(temperature)} deg, ${summary}`
     : 'No Weather Info Available. Make sure you provided a valid API key in the `config.js` file.';
@@ -105,7 +117,6 @@ const getWeatherInfo = (weatherInfo, navigation) => {
     ? `${Math.floor(temperature)}` : `ERROR`;
   return (
     <View style={{flex: 1}}>
-      <ImageBackground source={require('./images/blue_sky.png')} style={{width: '100%', height: height}}>
       <View style={styles.headerContainer}>
         <Button
           title='Add Location'
@@ -125,11 +136,77 @@ const getWeatherInfo = (weatherInfo, navigation) => {
       <View style={styles.bodyContainer}>
         <Text style={styles.summaryText}>{summary}</Text>
       </View>
-      </ImageBackground>
     </View>
   );
 };
+const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+const GetThisDayWeatherInfo = ({hourlyForecast}) => {
+    //for demonstration purposes lop off past hour 24
+    console.log('getThisDayWeatherInfo new obj: ', hourlyForecast)
+    return (
+      <View style={{flex: 1, flexDirection: 'column'}}>
+        <View style={styles.dailyContainer}>
+        <ScrollView
+          style={{flex: 1, height: 100, borderTopWidth: 1, borderTopColor: "#ffffff",  borderBottomWidth: 1, borderBottomColor: "#ffffff"}}
+          contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}>
+          {Object.keys(hourlyForecast.data).map((keyName, keyIndex) => {
+            let weekdayObj = hourlyForecast.data[keyName];
+            if (keyIndex > 24 || !weekdayObj) return;
+            console.log('weekdayObj : ', weekdayObj)
+
+            return (
+              <View style={{flex: 1, width: 100, justifyContent: 'space-around', flexDirection: 'column'}}>
+                {keyIndex < 1 ? <Text>{`Now`}</Text> : <Text style={{color: "#ffffff"}}>{weekdayObj.weekDay}</Text>}
+                <View><Icon
+                  name={`ios-sunny`}
+                  size={20}
+                  style={{
+                    textAlign: 'center',
+                    marginRight: 10,
+                    width: 20,
+                  }} /></View>
+                  <View><Text style={{color: "#ffffff"}}>{Math.floor(weekdayObj.temperature)+"\u00B0"}</Text></View>
+              </View>
+              )
+          })}
+          </ScrollView>
+        </View>
+      </View>
+    )
+}
+
+const GetThisWeekWeatherInfo = ({weatherDict}) => {
+  console.log('getThisWeekWeatherInfo : ', weatherDict)
+
+  return (
+    <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={styles.weeklyContainer}>
+        {Object.keys(weatherDict).map((keyName, keyIndex) => {
+          let weekdayObj = weatherDict[keyName];
+
+          return (
+            <View style={{flex: 1, width: 300, justifyContent: 'space-around', flexDirection: 'row', paddingVertical: 8}}>
+              <Text style={{fontSize: 18, color: "#ffffff"}}>{weekdayObj.weekDay}</Text>
+              <Icon
+                name={`ios-sunny`}
+                size={20}
+                style={{
+                  textAlign: 'center',
+                  marginRight: 10,
+                  width: 20,
+                }} />
+                <Text style={{fontSize: 16, color: "#ffffff"}}>{Math.floor(weekdayObj.temperatureMax)}</Text>
+                <Text style={{fontSize: 16, color: "#ffffff"}}>{Math.floor(weekdayObj.temperatureMin)}</Text>
+            </View>
+          )
+        })}
+      </View>
+    </View>
+  )
+}
 class Count extends React.Component {
   render() {
     return <Text>Count: {this.props.value}</Text>
@@ -149,22 +226,69 @@ class WeatherComponentScreen extends React.Component {
     const {
       fetchData,
       isLoading,
-      key,
       navigation,
       savedLocation,
       weatherInfotab,
       tabLabel,
     } = this.props;
-
-    console.log('weather-component props saveLocation: ', savedLocation);
+//onHide={() => this.navTitleView.fadeInUp(200)}
+//onDisplay={() => this.navTitleView.fadeOut(100)}
     const hasWeatherData = isLoading ? null : Object.keys(savedLocation).length;
     return (
-      <ScrollView key={key} style={{flex: 1}} tabLabel={tabLabel}>
-        <View key={key} style={{flex: 1, flexGrow: 1, height: height}} tabLabel={tabLabel}>
-          {isLoading ? <ActivityIndicator /> : null}
-          {hasWeatherData ? getWeatherInfo(savedLocation, navigation) : null}
-        </View>
-      </ScrollView>
+      <ImageBackground source={require('./images/blue_sky.png')} style={{width: '100%', height: height, flexDirection: 'column'}}>
+        {isLoading ? <ActivityIndicator /> : null}
+        {(hasWeatherData && savedLocation.weatherDict.dailyForecast != 'undefined') ? <HeaderImageScrollView
+          maxHeight={MAX_HEIGHT}
+          minHeight={MIN_HEIGHT}
+          maxOverlayOpacity={0.0}
+          minOverlayOpacity={0.0}
+          scrollViewBackgroundColor={`#FF000000`}
+          renderHeader={() => <GetWeatherInfo dailyForecast={savedLocation.weatherDict.dailyForecast} navigation={navigation} />}
+          renderFixedForeground={() => (
+            <View
+              style={{flex: 1, height: 250, paddingTop: 60, paddingBottom: 20, justifyContent: 'center'}}
+              ref={navTitleView => {
+                this.navTitleView = navTitleView;
+              }}>
+              <Text style={{fontSize: 64, textAlign: 'center'}}>
+                {`19` + "\u00B0"}
+              </Text>
+            </View>
+          )}
+          fadeOutForeground
+          disableHeaderGrow={true}>
+          <TriggeringView
+            style={styles.section}
+          >
+          <GetThisDayWeatherInfo hourlyForecast={savedLocation.weatherDict.hourlyForecast} />
+          </TriggeringView>
+            <ScrollView style={{flex: 1}}>
+             <GetThisWeekWeatherInfo weatherDict={savedLocation.weatherDict.dailyForecast} />
+             <View style={{ paddingTop: 20, paddingBottom: 20, borderTopWidth: 1, borderTopColor: "#ffffff", borderBottomWidth: 1, borderBottomColor: "#ffffff"}}>
+              <Text style={{ fontSize: 18 }}>{savedLocation.weatherDict.hourlyForecast.summary}</Text>
+             </View>
+             <View>
+             <View style={{ paddingTop: 20, paddingBottom: 20}}>
+              <Text style={{ fontSize: 18 }}>{`sunrise`}</Text>
+              <Text style={{ fontSize: 18 }}>{`05:21`}</Text>
+             </View>
+             <View style={{ paddingTop: 20, paddingBottom: 20}}>
+              <Text style={{ fontSize: 18 }}>{`sunset`}</Text>
+              <Text style={{ fontSize: 18 }}>{`21:21`}</Text>
+            </View>
+            <View style={{ paddingTop: 20, paddingBottom: 20}}>
+             <Text style={{ fontSize: 18 }}>{`sunrise`}</Text>
+             <Text style={{ fontSize: 18 }}>{`05:21`}</Text>
+            </View>
+            <View style={{ paddingTop: 20, paddingBottom: 20}}>
+             <Text style={{ fontSize: 18 }}>{`sunset`}</Text>
+             <Text style={{ fontSize: 18 }}>{`21:21`}</Text>
+            </View>
+
+           </View>
+          </ScrollView>
+        </HeaderImageScrollView> : null}
+      </ImageBackground>
     )
   }
 }
@@ -181,9 +305,12 @@ export default class WeatherComponent extends React.Component {
         navigation
       } = this.props;
       //if not weather info causes err
-      console.log('weather-component props indexWeatherLocations', this.props.indexWeatherLocations)
       console.log('weather-component props weatherInfo', this.props.indexWeatherListData)
-
+      const getErrorMessage = () => (
+        <Text style={styles.errorText}>
+          An Error occured when fetching data
+        </Text>
+      );
       return (
         <View style={styles.container}>
           {error ? getErrorMessage() : null}
@@ -196,11 +323,14 @@ export default class WeatherComponent extends React.Component {
           }
           {indexWeatherListData.length > 0 &&
             <ScrollableTabView
-                  contentContainerStyle={{flexGrow: 1, flex: 1, height: "100%"}}
-                  renderTabBar={false}
-                >
-              {indexWeatherListData.map(
-                (savedLocation, i) => <WeatherComponentScreen
+              contentContainerStyle={{
+                flexGrow: 1,
+                flex: 1,
+                height: "100%"
+              }}
+              renderTabBar={false}>
+              {indexWeatherListData.map((savedLocation, i) =>
+                <WeatherComponentScreen
                     navigation={navigation}
                     key={`${i}`}
                     savedLocation={savedLocation}

@@ -8,8 +8,6 @@ export const selectLocation = (location) => (
   (dispatch) => {
     dispatch(selectLocationRequest());
     return new Promise.resolve(dispatch(setLocationSuccess(location.coords)))
-//        .then(() => setLocationData(coords))
-//        .then((weatherInfo) => fetchData({name: location.name, ...weatherInfo}))
       .then(() => fetchWeatherData(location.coords))
       .then((fullWeatherInfo) => {
         dispatch(selectLocationSuccess({fullWeatherInfo: fullWeatherInfo}))
