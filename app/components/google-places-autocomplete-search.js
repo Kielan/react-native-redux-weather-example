@@ -73,7 +73,6 @@ export class GooglePlacesAutocompleteSearch extends React.Component {
     this.props.onCancel && (await this.props.onCancel());
   };
   _onChangeText = async (text) => {
-    console.log('_onChangeText text: ', text)
 
     try {
       this.props.fetchGooglePlacesAutocomplete(text);
@@ -84,8 +83,6 @@ export class GooglePlacesAutocompleteSearch extends React.Component {
     }
   }
   _handleChangeText = async (text) => {
-    console.log('_handleChangeText text: ', text)
-
     await this._onChangeText(text);
 
     const onChangeText = this.props

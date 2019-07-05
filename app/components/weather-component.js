@@ -2,6 +2,8 @@
 
 import React from 'react';
 import {
+  Animated,
+  Easing,
   Dimensions,
   View,
   Button,
@@ -11,6 +13,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -18,7 +21,7 @@ import * as Animatable from 'react-native-animatable';
 import { ScrollableTabView } from '@valdio/react-native-scrollable-tabview'
 import HeaderImageScrollView, { TriggeringView } from 'react-native-image-header-scroll-view';
 import { Header } from 'react-navigation';
-
+import { RNSNap } from './rn-snap';
 import { getWeatherSelector } from '../store/reducers/weather-reducer';
 import { fetchData } from '../store/actions/fetch-data';
 
@@ -27,6 +30,7 @@ var { height } = Dimensions.get('window');
 
 const MIN_HEIGHT = Header.HEIGHT;
 const MAX_HEIGHT = 150;
+const IS_IOS = Platform.OS === 'ios';
 
 const mapStateToProps = (state) => getWeatherSelector(state);
 
@@ -143,7 +147,6 @@ const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 
 const GetThisDayWeatherInfo = ({hourlyForecast}) => {
     //for demonstration purposes lop off past hour 24
-    console.log('getThisDayWeatherInfo new obj: ', hourlyForecast)
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
         <View style={styles.dailyContainer}>
@@ -155,7 +158,6 @@ const GetThisDayWeatherInfo = ({hourlyForecast}) => {
           {Object.keys(hourlyForecast.data).map((keyName, keyIndex) => {
             let weekdayObj = hourlyForecast.data[keyName];
             if (keyIndex > 24 || !weekdayObj) return;
-            console.log('weekdayObj : ', weekdayObj)
 
             return (
               <View style={{flex: 1, width: 100, justifyContent: 'space-around', flexDirection: 'column'}}>
@@ -179,7 +181,6 @@ const GetThisDayWeatherInfo = ({hourlyForecast}) => {
 }
 
 const GetThisWeekWeatherInfo = ({weatherDict}) => {
-  console.log('getThisWeekWeatherInfo : ', weatherDict)
 
   return (
     <View style={{flex: 1, flexDirection: 'column'}}>
@@ -219,7 +220,17 @@ class WeatherComponentScreen extends React.Component {
   constructor() {
     super();
     this.state = {
-      componentLocation: null
+      componentLocation: null,
+      prevScrollDirection: ''
+    }
+  }
+  onScroll = (event) => {
+    var currentOffset = event.nativeEvent.contentOffset.y;
+        var direction = currentOffset > this.offset ? 'down' : 'up';
+    this.offset = currentOffset;
+    console.log('onScroll(event): ', direction);
+    if (direction === 'up') {
+      this.navTitleView.fadeOut();
     }
   }
   render() {
@@ -237,31 +248,80 @@ class WeatherComponentScreen extends React.Component {
     return (
       <ImageBackground source={require('./images/blue_sky.png')} style={{width: '100%', height: height, flexDirection: 'column'}}>
         {isLoading ? <ActivityIndicator /> : null}
-        {(hasWeatherData && savedLocation.weatherDict.dailyForecast != 'undefined') ? <HeaderImageScrollView
+        {/*(hasWeatherData && savedLocation.weatherDict.dailyForecast != 'undefined') ?
+          <HeaderImageScrollView
+          onScroll={this.onScroll}
           maxHeight={MAX_HEIGHT}
           minHeight={MIN_HEIGHT}
           maxOverlayOpacity={0.0}
           minOverlayOpacity={0.0}
           scrollViewBackgroundColor={`#FF000000`}
+          ScrollViewComponent={() => <ScrollView
+            ref={carouselRef => {
+              this._carouselRef = carouselRef;
+            }}
+            />
+          }
           renderHeader={() => <GetWeatherInfo dailyForecast={savedLocation.weatherDict.dailyForecast} navigation={navigation} />}
-          renderFixedForeground={() => (
-            <View
+          renderForeground={() => (
+            <Animatable.View
               style={{flex: 1, height: 250, paddingTop: 60, paddingBottom: 20, justifyContent: 'center'}}
+              onHide={() => this.navTitleView.fadeOut(200)}
               ref={navTitleView => {
                 this.navTitleView = navTitleView;
               }}>
               <Text style={{fontSize: 64, textAlign: 'center'}}>
                 {`19` + "\u00B0"}
               </Text>
-            </View>
-          )}
-          fadeOutForeground
+            </Animatable.View>
+        )}
+          fadeOutForeground={true}
           disableHeaderGrow={true}>
           <TriggeringView
             style={styles.section}
           >
           <GetThisDayWeatherInfo hourlyForecast={savedLocation.weatherDict.hourlyForecast} />
-          </TriggeringView>
+          <ScrollView style={{flex: 1}}>
+           <GetThisWeekWeatherInfo weatherDict={savedLocation.weatherDict.dailyForecast} />
+           <View style={{ paddingTop: 20, paddingBottom: 20, borderTopWidth: 1, borderTopColor: "#ffffff", borderBottomWidth: 1, borderBottomColor: "#ffffff"}}>
+            <Text style={{ fontSize: 18 }}>{savedLocation.weatherDict.hourlyForecast.summary}</Text>
+           </View>
+           <View>
+           <View style={{ paddingTop: 20, paddingBottom: 20}}>
+            <Text style={{ fontSize: 18 }}>{`sunrise`}</Text>
+            <Text style={{ fontSize: 18 }}>{`05:21`}</Text>
+           </View>
+           <View style={{ paddingTop: 20, paddingBottom: 20}}>
+            <Text style={{ fontSize: 18 }}>{`sunset`}</Text>
+            <Text style={{ fontSize: 18 }}>{`21:21`}</Text>
+          </View>
+          <View style={{ paddingTop: 20, paddingBottom: 20}}>
+           <Text style={{ fontSize: 18 }}>{`sunrise`}</Text>
+           <Text style={{ fontSize: 18 }}>{`05:21`}</Text>
+          </View>
+          <View style={{ paddingTop: 20, paddingBottom: 20}}>
+           <Text style={{ fontSize: 18 }}>{`sunset`}</Text>
+           <Text style={{ fontSize: 18 }}>{`21:21`}</Text>
+          </View>
+
+         </View>
+        </ScrollView>
+        </TriggeringView>
+    </HeaderImageScrollView> : null*/}
+    {(hasWeatherData && savedLocation.weatherDict.dailyForecast != 'undefined') &&
+        <RNSnap vertical="true">
+            <GetWeatherInfo dailyForecast={savedLocation.weatherDict.dailyForecast} navigation={navigation} />
+            <Animatable.View
+              style={{flex: 1, height: 250, paddingTop: 60, paddingBottom: 20, justifyContent: 'center'}}
+              onHide={() => this.navTitleView.fadeOut(200)}
+              ref={navTitleView => {
+                this.navTitleView = navTitleView;
+              }}>
+              <Text style={{fontSize: 64, textAlign: 'center'}}>
+                {`19` + "\u00B0"}
+              </Text>
+            </Animatable.View>
+            <GetThisDayWeatherInfo hourlyForecast={savedLocation.weatherDict.hourlyForecast} />
             <ScrollView style={{flex: 1}}>
              <GetThisWeekWeatherInfo weatherDict={savedLocation.weatherDict.dailyForecast} />
              <View style={{ paddingTop: 20, paddingBottom: 20, borderTopWidth: 1, borderTopColor: "#ffffff", borderBottomWidth: 1, borderBottomColor: "#ffffff"}}>
@@ -287,13 +347,17 @@ class WeatherComponentScreen extends React.Component {
 
            </View>
           </ScrollView>
-        </HeaderImageScrollView> : null}
+        </RNSnap>
+    }
       </ImageBackground>
     )
   }
 }
 
 export default class WeatherComponent extends React.Component {
+    constructor(props) {
+      super(props);
+  }
     render() {
       const {
         isLoading,
@@ -305,7 +369,6 @@ export default class WeatherComponent extends React.Component {
         navigation
       } = this.props;
       //if not weather info causes err
-      console.log('weather-component props weatherInfo', this.props.indexWeatherListData)
       const getErrorMessage = () => (
         <Text style={styles.errorText}>
           An Error occured when fetching data

@@ -36,7 +36,6 @@ export class MainScreen extends React.Component {
     }
   }
   render() {
-    console.log('mainscreen this.props: ', this.props, 'this.weatherInfo: ', this.navigationOptions)
     return (
       <View style={styles.container}>
         <WeatherContainer navigation={this.props.navigation}/>

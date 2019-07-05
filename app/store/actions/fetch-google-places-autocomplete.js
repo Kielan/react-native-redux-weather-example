@@ -8,7 +8,6 @@ export const fetchGooglePlacesAutocomplete = (text) => (
       return fetchGooglePlacesAutocompleteApi(text)
     })
     .then((autoCompleteLocationlist) => {
-      console.log('fetchGooglePlacesAutocomplete: ', autoCompleteLocationlist.predictions)
       return dispatch(googlePlacesAutocompleteSuccess(autoCompleteLocationlist.predictions))
     })
     .catch((err) => {
@@ -32,7 +31,6 @@ export const googlePlacesAutocompleteRequest = () => (
 );
 
 export const googlePlacesAutocompleteSuccess = (weatherPredictionsList) => {
-  console.log('googlePlacesAutocompleteSuccess action: ', weatherPredictionsList)
   return (
     {
       type: ActionType.GOOGLE_PLACES_AUTOCOMPLETE_SUCCESS,

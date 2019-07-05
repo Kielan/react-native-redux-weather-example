@@ -34,7 +34,6 @@ let SearchContainer = connect(
 
 export class SearchScreen extends React.Component {
   static navigationOptions = (props) => {
-    console.log('SearchScreen navigationOptions props: ', props)
     return {
       // headerTitle instead of title
       headerLeft: null,
@@ -42,7 +41,6 @@ export class SearchScreen extends React.Component {
     }
   };
   render() {
-    console.log('mainscreen this.props: ', this.props, 'this.weatherInfo: ', this.navigationOptions)
     return (
       <View style={styles.container}>
         {<SearchContainer navigation={this.props.navigation} />}
