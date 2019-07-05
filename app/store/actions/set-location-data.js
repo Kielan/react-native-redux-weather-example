@@ -1,11 +1,8 @@
-import { setLocationError } from './set-location-error';
-import { setLocationRequest } from './set-location-request';
-import { setLocationSuccess } from './set-location-success';
+import { ActionType } from '../actions.js';
 
 export const setLocationData = (coords) => (
   (dispatch) => new Promise(function(resolve, reject) {
     dispatch(setLocationRequest());
-    console.log('set-location not calling')
     return Promise.resolve(dispatch(setLocationSuccess(coords)))
     .then(() => {
       resolve(coords)
@@ -16,3 +13,25 @@ export const setLocationData = (coords) => (
     });
   })
 )
+
+export const setLocationError = () => (
+  {
+    type: ActionType.SET_LOCATION_ERROR,
+    payload: { error: true },
+  }
+);
+
+export const setLocationRequest = () => (
+  {
+    type: ActionType.SELECT_LOCATION_REQUEST,
+    payload: { isLoading: true },
+  }
+);
+
+
+export const setLocationSuccess = (locationCoords) => (
+  {
+    type: ActionType.SET_LOCATION_SUCCESS,
+    payload: { locationCoords },
+  }
+);
