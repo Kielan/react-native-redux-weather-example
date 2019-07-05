@@ -14,7 +14,6 @@ export class SearchHeaderComponent extends React.Component {
       fetchGooglePlacesAutocomplete,
       goBack,
     } = this.props;
-    console.log('check typeof fetchGooglePlaces this.props: ', this.props);
     return (
       <View style={{flex: 1}}>
         <GooglePlacesAutocompleteSearch

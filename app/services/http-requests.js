@@ -1,6 +1,9 @@
 import Qs from 'qs';
 import { API_KEY } from '../config';
 
+const throwErrorManually = ({ error_message }) => {
+    throw new Error("Thrown from throwErrorManually()");
+}
 const query = {
   key: "AIzaSyBBu8K9Mup1qgO1LFE45xrlpLTtGupWzUo",
   language: "en", // language of the results
@@ -15,7 +18,6 @@ function getWeekDay(date) {
 }
 export const orderWeatherData = async (darkSkyData) => {
   let orderWeatherData = {};
-  console.log('orderWeatherData darkSkyData: ', darkSkyData)
   // I think the data can make it from state to view in unordered fashion
   //time data.daily is just not returning a time
   //accurate to properly parse a proper weekDay
@@ -39,14 +41,19 @@ export const fetchWeatherData = async (coords) => {
 }
 
 export const fetchGooglePlacesAutocompleteApi = async (text) => {
-  let placesData = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?&input=${encodeURIComponent(text)}&${Qs.stringify(query)}`);
-
-  return placesData.json()
+    try {
+        let placesData = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?&input=${encodeURIComponent(text)}&${Qs.stringify(query)}`);
+        let placesJSON = placesData.json();
+        if (placesJSON.error_message) {
+            throwErrorManually(placesJSON)
+        }
+        return placesJSON
+    } catche (e) {
+        console.error(e);
+    }
 }
 
 export const fetchGooglePlacesApi = async (place_id) => {
-  console.log('fetchGooglePlacesApi url place_id: ', place_id)
-
   let url = 'https://maps.googleapis.com/maps/api/place/details/json?' + Qs.stringify({
     key: "AIzaSyBBu8K9Mup1qgO1LFE45xrlpLTtGupWzUo",
     placeid: place_id,

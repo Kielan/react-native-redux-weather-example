@@ -46,14 +46,12 @@ class SearchComponent extends React.Component {
       });
   }
   onSelectRow = (locationData) => {
-    console.log('search-component onSelectRow locationData: ', locationData)
     Promise.resolve(this.props.fetchGooglePlaces(locationData.item.place_id))
     .then(() => {
       this.props.navigation.navigate('MainScreen')
     });
   }
   renderRow = (item, sectionId, index) => {
-    console.log('at least one renderRow called before turn (): ', item)
     return (
       <TouchableHighlight
         style={{
@@ -120,7 +118,6 @@ class SearchComponent extends React.Component {
       searchResultData,
       selectLocation,
     } = this.props;
-    console.log('search-component props searchResultData: ', this.props.searchResultData)
     return (
       <View style={{flex: 1}}>
         {isloadingGooglePlaces && <ActivityIndicator />}
